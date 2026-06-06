@@ -9,25 +9,58 @@ import { errorHandler } from './middleware/errorHandler.js';
 import { notFound } from './middleware/notFound.js';
 
 const app = express();
-const allowedOrigins = process.env.CLIENT_URL
+const exactAllowedOrigins = new Set(
+  process.env.CLIENT_URL
   ?.split(',')
   .map((origin) => origin.trim())
-  .filter(Boolean);
+  .filter(Boolean)
+);
+
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const wildcardToRegExp = (pattern) =>
+  new RegExp(`^${escapeRegExp(pattern).replace(/\\\*/g, '.*')}$`);
+
+const allowedOriginPatterns = [
+  /^http:\/\/localhost(?::\d+)?$/,
+  /^http:\/\/127\.0\.0\.1(?::\d+)?$/,
+  /^https:\/\/(?:.+\.)?vercel\.app$/
+];
+
+const extraOriginPatterns = process.env.CLIENT_URL_PATTERNS
+  ?.split(',')
+  .map((pattern) => pattern.trim())
+  .filter(Boolean)
+  .map(wildcardToRegExp);
+
+if (extraOriginPatterns?.length) {
+  allowedOriginPatterns.push(...extraOriginPatterns);
+}
+
+const isOriginAllowed = (origin) => {
+  if (!origin) {
+    return true;
+  }
+
+  if (exactAllowedOrigins.has(origin)) {
+    return true;
+  }
+
+  return allowedOriginPatterns.some((pattern) => pattern.test(origin));
+};
+
+const corsOptions = {
+  origin(origin, callback) {
+    return callback(null, isOriginAllowed(origin));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Authorization', 'Content-Type']
+};
 
 app.set('trust proxy', 1);
 app.use(helmet());
-app.use(
-  cors({
-    origin(origin, callback) {
-      if (!origin || !allowedOrigins?.length) {
-        return callback(null, true);
-      }
-
-      return callback(null, allowedOrigins.includes(origin));
-    },
-    credentials: true
-  })
-);
+app.use(cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 app.use(express.json({ limit: '20kb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));

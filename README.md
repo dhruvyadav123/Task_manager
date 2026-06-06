@@ -147,6 +147,7 @@ This repository now includes a root-level `render.yaml` for the backend web serv
    - `MONGODB_URI`
    - `JWT_SECRET`
    - `CLIENT_URL`
+   - Optional: `CLIENT_URL_PATTERNS`
 5. Deploy the Blueprint.
 
 Render service settings defined in `render.yaml`:
@@ -162,6 +163,7 @@ Recommended production values:
 - `MONGODB_URI`: MongoDB Atlas connection string
 - `JWT_SECRET`: long random secret
 - `CLIENT_URL`: your deployed frontend URL, for example `https://taskflow.vercel.app`
+- `CLIENT_URL_PATTERNS`: optional wildcard origins, for example `https://*.vercel.app`
 - `JWT_EXPIRES_IN`: `7d`
 
 After the backend is live, update the frontend environment variable:
@@ -180,6 +182,12 @@ You can provide multiple allowed frontend origins by separating them with commas
 
 ```env
 CLIENT_URL=http://localhost:5173,https://task-manager-xi-self.vercel.app
+```
+
+To allow Vercel preview deployments without updating Render every time, set:
+
+```env
+CLIENT_URL_PATTERNS=https://*.vercel.app
 ```
 
 ## Assignment Submission Checklist
