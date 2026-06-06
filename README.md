@@ -136,6 +136,40 @@ GET /api/tasks?search=design&status=pending&page=1&limit=8
 
 Set production environment variables and update `CLIENT_URL` and `VITE_API_URL`.
 
+### Deploy backend on Render
+
+This repository now includes a root-level `render.yaml` for the backend web service.
+
+1. Push the repository to GitHub.
+2. In Render, click `New +` -> `Blueprint`.
+3. Connect the repository and select the root `render.yaml`.
+4. When prompted, provide values for:
+   - `MONGODB_URI`
+   - `JWT_SECRET`
+   - `CLIENT_URL`
+5. Deploy the Blueprint.
+
+Render service settings defined in `render.yaml`:
+
+- Runtime: `node`
+- Root directory: `server`
+- Build command: `npm install`
+- Start command: `npm start`
+- Health check path: `/api/health`
+
+Recommended production values:
+
+- `MONGODB_URI`: MongoDB Atlas connection string
+- `JWT_SECRET`: long random secret
+- `CLIENT_URL`: your deployed frontend URL, for example `https://taskflow.vercel.app`
+- `JWT_EXPIRES_IN`: `7d`
+
+After the backend is live, update the frontend environment variable:
+
+```env
+VITE_API_URL=https://your-render-service.onrender.com/api
+```
+
 ## Assignment Submission Checklist
 
 - Push project to GitHub
