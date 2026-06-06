@@ -170,6 +170,18 @@ After the backend is live, update the frontend environment variable:
 VITE_API_URL=https://your-render-service.onrender.com/api
 ```
 
+If the frontend is deployed on Vercel, also set the backend Render environment variable:
+
+```env
+CLIENT_URL=https://task-manager-xi-self.vercel.app
+```
+
+You can provide multiple allowed frontend origins by separating them with commas:
+
+```env
+CLIENT_URL=http://localhost:5173,https://task-manager-xi-self.vercel.app
+```
+
 ## Assignment Submission Checklist
 
 - Push project to GitHub
